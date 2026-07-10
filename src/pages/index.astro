@@ -1,0 +1,57 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import PostCard from '../components/PostCard.astro';
+import { CATEGORIES, SITE_TITLE, SITE_DESCRIPTION, IG_URL } from '../consts';
+
+const posts = (await getCollection('posts', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 6);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  url: Astro.site?.toString(),
+};
+---
+
+<Base jsonLd={jsonLd}>
+  <section class="hero">
+    <h1>孩子的發展,<br />其實可以<span class="hi">看得懂</span>。</h1>
+    <p>
+      我是謝寧,桃園的兒童物理治療師。
+      在治療、讀書與生活裡,慢慢整理孩子發展的觀察——
+      寫成你聽得懂的話,和在家做得到的方法。
+    </p>
+  </section>
+
+  <section>
+    <h2>想找什麼?</h2>
+    <ul class="cat-grid">
+      {CATEGORIES.map((c) => (
+        <li>
+          <a href={`/category/${c.slug}`}>
+            <div class="name">{c.name}</div>
+            <div class="blurb">{c.blurb}</div>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section>
+    <h2>最新文章</h2>
+    {posts.map((post) => <PostCard post={post} />)}
+    <p style="margin-top:1.2rem"><a href="/posts">看所有文章 →</a></p>
+  </section>
+
+  <aside class="cta">
+    <p><strong>擔心孩子的動作發展?</strong></p>
+    <p>來 Instagram 找我聊聊,或預約當面評估。</p>
+    <div class="btns">
+      <a class="btn" href={IG_URL}>IG:@therapist.ning</a>
+    </div>
+  </aside>
+</Base>
