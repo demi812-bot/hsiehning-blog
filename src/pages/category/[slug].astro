@@ -1,0 +1,22 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PostCard from '../../components/PostCard.astro';
+import { CATEGORIES } from '../../consts';
+
+export async function getStaticPaths() {
+  return CATEGORIES.map((c) => ({ params: { slug: c.slug }, props: { category: c } }));
+}
+
+const { category } = Astro.props;
+const posts = (
+  await getCollection('posts', ({ data }) => !data.draft && data.category === category.name)
+).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<Base title={category.name} description={`${category.name}:${category.blurb}——謝寧兒童物理治療師`}>
+  <h1 style="margin-top:2.4rem">{category.name}</h1>
+  <p style="color:var(--ink-soft)">{category.blurb}</p>
+  {posts.length === 0 && <p>這個分類的文章正在準備中,先到 <a href="/posts">所有文章</a> 逛逛吧。</p>}
+  {posts.map((post) => <PostCard post={post} />)}
+</Base>
