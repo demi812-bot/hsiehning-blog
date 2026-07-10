@@ -1,0 +1,18 @@
+---
+import { categorySlug } from '../consts';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props { post: CollectionEntry<'posts'> }
+const { post } = Astro.props;
+const d = post.data.pubDate;
+const dateStr = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+---
+
+<article class="post-card">
+  <h3><a href={`/posts/${post.id}`}>{post.data.title}</a></h3>
+  <div class="post-meta">
+    <a class="cat-chip" href={`/category/${categorySlug(post.data.category)}`}>{post.data.category}</a>
+    <time datetime={d.toISOString()}>{dateStr}</time>
+  </div>
+  <p class="post-desc">{post.data.description}</p>
+</article>
