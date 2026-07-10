@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://hsiening.vercel.app/sitemap-index.xml
+Sitemap: https://hsiehning-blog.vercel.app/sitemap-index.xml
