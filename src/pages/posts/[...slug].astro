@@ -1,0 +1,53 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Cta from '../../components/Cta.astro';
+import { AUTHOR, SITE_TITLE, categorySlug } from '../../consts';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const d = post.data.pubDate;
+const dateStr = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: post.data.title,
+  description: post.data.description,
+  datePublished: post.data.pubDate.toISOString(),
+  ...(post.data.updatedDate && { dateModified: post.data.updatedDate.toISOString() }),
+  author: { '@type': 'Person', name: AUTHOR, url: Astro.site?.toString() },
+  publisher: { '@type': 'Person', name: AUTHOR },
+  mainEntityOfPage: new URL(`/posts/${post.id}`, Astro.site).toString(),
+  inLanguage: 'zh-Hant-TW',
+};
+---
+
+<Base title={post.data.title} description={post.data.description} ogType="article" jsonLd={jsonLd}>
+  <header class="article-header">
+    <a class="cat-chip" href={`/category/${categorySlug(post.data.category)}`}>{post.data.category}</a>
+    <h1>{post.data.title}</h1>
+    <div class="post-meta">
+      <span>{AUTHOR}|兒童物理治療師</span>
+      <time datetime={d.toISOString()}>{dateStr}</time>
+    </div>
+  </header>
+
+  <div class="article-body">
+    <Content />
+  </div>
+
+  <Cta />
+
+  <p class="disclaimer">
+    本文為衛教資訊,僅供參考,無法取代專業人員的當面評估。每個孩子的狀況不同,若對孩子的發展有疑慮,請諮詢兒童物理治療師或至醫療院所評估。
+  </p>
+</Base>

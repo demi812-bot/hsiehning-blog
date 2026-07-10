@@ -1,0 +1,14 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PostCard from '../../components/PostCard.astro';
+
+const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+
+<Base title="所有文章" description="謝寧兒童物理治療師的所有文章:發展里程碑、在家練習、特殊兒照護、就醫與資源。">
+  <h1 style="margin-top:2.4rem">所有文章</h1>
+  {posts.map((post) => <PostCard post={post} />)}
+</Base>
