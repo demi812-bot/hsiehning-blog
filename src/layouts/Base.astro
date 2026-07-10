@@ -1,0 +1,77 @@
+---
+import { SITE_TITLE, SITE_DESCRIPTION, IG_URL, THREADS_URL, CATEGORIES, AUTHOR } from '../consts';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogType?: string;
+  jsonLd?: object;
+}
+
+const { title, description = SITE_DESCRIPTION, ogType = 'website', jsonLd } = Astro.props;
+const pageTitle = title ? `${title}|${SITE_TITLE}` : SITE_TITLE;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={AUTHOR} />
+    <link rel="canonical" href={canonical} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="alternate" type="application/rss+xml" title={SITE_TITLE} href="/rss.xml" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content="zh_TW" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;600;700&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="/">{SITE_TITLE}</a>
+        <p class="tagline">把孩子的發展,變成爸媽看得懂的事。</p>
+        <nav class="site-nav">
+          <a href="/posts">所有文章</a>
+          {CATEGORIES.map((c) => <a href={`/category/${c.slug}`}>{c.name}</a>)}
+          <a href="/services">評估與服務</a>
+          <a href="/faq">常見問題</a>
+          <a href="/about">關於謝寧</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <div class="links">
+          <a href={IG_URL} rel="me">Instagram</a>
+          <a href={THREADS_URL} rel="me">Threads</a>
+          <a href="/rss.xml">RSS</a>
+        </div>
+        <p>
+          本網站內容僅供衛教參考,不能取代專業人員的當面評估與治療。<br />
+          © {new Date().getFullYear()} {AUTHOR}|兒童物理治療師
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
