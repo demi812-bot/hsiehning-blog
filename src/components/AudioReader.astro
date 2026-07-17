@@ -1,0 +1,175 @@
+<div class="tts" id="tts-player" hidden>
+  <button id="tts-toggle" type="button" aria-label="朗讀這篇文章">
+    <span id="tts-icon">🎧</span>
+    <span id="tts-label">聽這篇文章</span>
+  </button>
+  <button id="tts-stop" type="button" hidden aria-label="停止朗讀">停止</button>
+  <label id="tts-rate-wrap">
+    語速
+    <select id="tts-rate">
+      <option value="0.9">慢</option>
+      <option value="1" selected>正常</option>
+      <option value="1.25">快</option>
+    </select>
+  </label>
+  <span id="tts-progress" hidden></span>
+</div>
+
+<style>
+  .tts {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin: 1rem 0 0.4rem;
+    padding: 0.55rem 0.9rem;
+    background: var(--paper-dark, #f1ece3);
+    border: 1px solid var(--line, #ddd5c7);
+    border-radius: 999px;
+    width: fit-content;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 0.85rem;
+  }
+  .tts button {
+    border: none;
+    background: var(--accent, #5d7052);
+    color: #fff;
+    border-radius: 999px;
+    padding: 0.35rem 0.95rem;
+    font-size: 0.85rem;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .tts button:hover { opacity: 0.88; }
+  .tts #tts-stop { background: transparent; color: var(--ink-soft, #6f6a60); border: 1px solid var(--line, #ddd5c7); }
+  .tts select {
+    border: 1px solid var(--line, #ddd5c7);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--ink, #3d3a34);
+    padding: 0.15rem 0.3rem;
+    font-size: 0.85rem;
+  }
+  #tts-rate-wrap { color: var(--ink-soft, #6f6a60); display: flex; align-items: center; gap: 0.3rem; }
+  #tts-progress { color: var(--ink-soft, #6f6a60); font-size: 0.8rem; }
+</style>
+
+<script>
+  (function () {
+    if (!('speechSynthesis' in window)) return;
+    const synth = window.speechSynthesis;
+    const player = document.getElementById('tts-player');
+    const toggle = document.getElementById('tts-toggle');
+    const icon = document.getElementById('tts-icon');
+    const label = document.getElementById('tts-label');
+    const stopBtn = document.getElementById('tts-stop');
+    const rateSel = document.getElementById('tts-rate');
+    const progress = document.getElementById('tts-progress');
+    if (!player || !toggle) return;
+    player.hidden = false;
+
+    function collectText() {
+      const parts = [];
+      const title = document.querySelector('.article-header h1');
+      if (title) parts.push(title.textContent.trim());
+      const body = document.querySelector('.article-body');
+      if (!body) return parts;
+      body.querySelectorAll('h2, h3, p, li').forEach((el) => {
+        if (el.closest('table')) return;
+        const t = el.textContent.replace(/\s+/g, ' ').trim();
+        if (t) parts.push(t);
+      });
+      if (body.querySelector('table')) {
+        parts.push('文章中有一張對照表,建議搭配畫面閱讀。');
+      }
+      return parts;
+    }
+
+    function chunk(parts) {
+      const chunks = [];
+      parts.forEach((p) => {
+        if (p.length <= 120) { chunks.push(p); return; }
+        p.split(/(?<=[。!?!?;;])/).forEach((s) => { if (s.trim()) chunks.push(s.trim()); });
+      });
+      return chunks;
+    }
+
+    let chunks = [];
+    let idx = 0;
+    let playing = false;
+    let paused = false;
+
+    function pickVoice() {
+      const voices = synth.getVoices();
+      return (
+        voices.find((v) => v.lang === 'zh-TW') ||
+        voices.find((v) => v.lang && v.lang.startsWith('zh')) ||
+        null
+      );
+    }
+
+    function speakNext() {
+      if (idx >= chunks.length) { reset(); return; }
+      const u = new SpeechSynthesisUtterance(chunks[idx]);
+      const voice = pickVoice();
+      if (voice) u.voice = voice;
+      u.lang = 'zh-TW';
+      u.rate = parseFloat(rateSel.value || '1');
+      u.onend = () => {
+        idx += 1;
+        if (playing && !paused) {
+          progress.textContent = Math.min(Math.round((idx / chunks.length) * 100), 100) + '%';
+          speakNext();
+        }
+      };
+      u.onerror = () => reset();
+      synth.speak(u);
+    }
+
+    function start() {
+      chunks = chunk(collectText());
+      if (!chunks.length) return;
+      idx = 0;
+      playing = true;
+      paused = false;
+      icon.textContent = '⏸';
+      label.textContent = '暫停';
+      stopBtn.hidden = false;
+      progress.hidden = false;
+      progress.textContent = '0%';
+      speakNext();
+    }
+
+    function reset() {
+      synth.cancel();
+      playing = false;
+      paused = false;
+      idx = 0;
+      icon.textContent = '🎧';
+      label.textContent = '聽這篇文章';
+      stopBtn.hidden = true;
+      progress.hidden = true;
+    }
+
+    toggle.addEventListener('click', () => {
+      if (!playing) { start(); return; }
+      if (!paused) {
+        synth.pause();
+        paused = true;
+        icon.textContent = '▶';
+        label.textContent = '繼續';
+      } else {
+        synth.resume();
+        paused = false;
+        icon.textContent = '⏸';
+        label.textContent = '暫停';
+      }
+    });
+
+    stopBtn.addEventListener('click', reset);
+    rateSel.addEventListener('change', () => {
+      if (playing) { synth.cancel(); paused = false; speakNext(); }
+    });
+    window.addEventListener('beforeunload', () => synth.cancel());
+  })();
+</script>
