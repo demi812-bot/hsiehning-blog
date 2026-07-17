@@ -2,6 +2,8 @@
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Cta from '../../components/Cta.astro';
+import AudioReader from '../../components/AudioReader.astro';
+import ReadProgress from '../../components/ReadProgress.astro';
 import { AUTHOR, SITE_TITLE, categorySlug } from '../../consts';
 
 export async function getStaticPaths() {
@@ -40,6 +42,9 @@ const jsonLd = {
       <time datetime={d.toISOString()}>{dateStr}</time>
     </div>
   </header>
+
+  <ReadProgress />
+  <AudioReader />
 
   <div class="article-body">
     <Content />
