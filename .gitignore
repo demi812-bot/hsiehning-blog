@@ -1,5 +1,6 @@
 node_modules/
 dist/
 .astro/
+public/audio/
 .DS_Store
 npm-debug.log*
