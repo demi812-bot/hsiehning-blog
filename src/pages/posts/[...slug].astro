@@ -16,6 +16,11 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
+
+// 音檔優先序:frontmatter 指定(如本人錄音)> 建置時自動產生的 TTS > 內建語音
+import fs from 'node:fs';
+const ttsPath = `public/audio/${post.id}.mp3`;
+const audioUrl = post.data.audioUrl ?? (fs.existsSync(ttsPath) ? `/audio/${post.id}.mp3` : undefined);
 const d = post.data.pubDate;
 const dateStr = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
 
@@ -44,7 +49,7 @@ const jsonLd = {
   </header>
 
   <ReadProgress />
-  <AudioReader audioUrl={post.data.audioUrl} />
+  <AudioReader audioUrl={audioUrl} />
 
   <div class="article-body">
     <Content />
