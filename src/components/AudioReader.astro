@@ -1,3 +1,14 @@
+---
+interface Props { audioUrl?: string }
+const { audioUrl } = Astro.props;
+---
+
+{audioUrl ? (
+  <div class="tts tts-audio">
+    <span class="tts-audio-label">🎧 聽這篇文章</span>
+    <audio controls preload="none" src={audioUrl}></audio>
+  </div>
+) : (
 <div class="tts" id="tts-player" hidden>
   <button id="tts-toggle" type="button" aria-label="朗讀這篇文章">
     <span id="tts-icon">🎧</span>
@@ -14,8 +25,12 @@
   </label>
   <span id="tts-progress" hidden></span>
 </div>
+)}
 
 <style>
+  .tts-audio { padding: 0.55rem 0.9rem; }
+  .tts-audio audio { height: 36px; max-width: 60vw; }
+  .tts-audio-label { color: var(--ink, #3d3a34); font-weight: 500; }
   .tts {
     display: flex;
     align-items: center;
