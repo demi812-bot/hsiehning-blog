@@ -11,6 +11,7 @@ const posts = defineCollection({
     category: z.enum(['發展里程碑', '在家練習', '特殊兒照護', '就醫與資源', '治療師觀點']),
     tags: z.array(z.string()).default([]),
     draft: z.boolean().default(false),
+    audioUrl: z.string().optional(),
   }),
 });
 
